@@ -1,0 +1,15 @@
+{application, herlka,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  ssl,
+                  inets,
+                  lager
+                 ]},
+  {mod, { herlka_app, []}},
+  {env, []}
+ ]}.
