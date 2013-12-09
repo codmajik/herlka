@@ -1,5 +1,7 @@
 
-* Overview
+Overview
+---------
+
 herlka (he[rlang]ka) is a [lager](https://github.com/basho/lager) backend for [Mozilla Heka](https://github.com/mozilla-services/heka).
 
 
@@ -7,13 +9,15 @@ It will sends all log entries (over tcp/udp) to hekad for further processing; It
 fields to allow easier toml and lua-sandbox filtering.
 
 
-* Usage
+Usage
+-------
 Include this backend into your project's rebar config:
 
     {herlka, ".*", {git, "https://github.com/codmajik/herlka.git", "master"}}
 
 
-* Configuration
+Configuration
+--------------
   Configure heka loggers like so:
 
     {herlka, [
