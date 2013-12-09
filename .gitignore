@@ -1,0 +1,5 @@
+log/
+ext/
+ebin/*
+
+herlka_message_pb.[he]rl
