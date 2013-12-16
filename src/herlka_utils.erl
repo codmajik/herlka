@@ -11,6 +11,12 @@ any_to_binary(V) when is_atom(V)   -> any_to_binary(atom_to_list(V));
 any_to_binary(V) when is_list(V)   -> list_to_binary(V);
 any_to_binary(V) when is_binary(V) -> V.
 
+pid_to_int(P) when is_atom(P) -> 
+  case whereis(P) of 
+    Pid when is_pid(Pid) -> pid_to_int(Pid);
+    _ -> 0
+  end;
+  
 pid_to_int(P) when is_list(P) ->
   [Node, Proc, S] = string:tokens(P,".<>"),
   NodeInt = list_to_integer(Node),
