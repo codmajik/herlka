@@ -1,7 +1,7 @@
 Overview
 ---------
 
-herlka (he[rlang]ka) is a client for for [Mozilla Heka](https://github.com/mozilla-services/heka) with support for [lager](https://github.com/basho/lager).
+herlka (he[rlang]ka) is a client for [Mozilla Heka](https://github.com/mozilla-services/heka) with [lager](https://github.com/basho/lager) support.
 
 
 It will sends all log entries (over tcp/udp) to hekad for further processing, with support for heka fields.
@@ -52,6 +52,18 @@ ___
         ]}
       ]}
     ]}
+
+
+####Todo
+_______
+
+* support tls
+* support unix domain socket transport (use afunix - though erlangers usually don't like nif drivers)
+
+
+####Contact
+twitter: @codmajik
+email: codmajik@gmail.com
 
 
 
