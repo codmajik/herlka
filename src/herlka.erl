@@ -26,6 +26,9 @@ stop() ->
   application:stop(?MODULE).
 
 
+start_logger(Name, [{_,_}|_]=Params) ->
+  herlka_sup:start_logger(Name,Params).
+
 clear_protobuf_cache(Logger) ->
   herlka_logger:clear_cache(Logger).
 
