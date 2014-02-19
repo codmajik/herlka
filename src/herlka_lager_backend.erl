@@ -21,7 +21,6 @@
 }).
 
 -include("../include/herlka.hrl").
--include_lib("lager/include/lager.hrl").
 
 
 init({Level, Identity, Logger}) -> init([{level, Level}, {identity, Identity}, {logger, Logger}]);
