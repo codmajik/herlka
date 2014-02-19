@@ -4,6 +4,8 @@
 
 -export([log/2, log/4, log/5, log/6, log/7, log/8]).
 
+-export ([dump_cache_to_file/2, clear_protobuf_cache/1]).
+
 -include("include/herlka.hrl").
 
 
@@ -22,6 +24,13 @@ start() ->
 %% @doc Stop the shawarma server.
 stop() ->
   application:stop(?MODULE).
+
+
+clear_protobuf_cache(Logger) ->
+  herlka_logger:clear_cache(Logger).
+
+dump_cache_to_file(Logger, FilePath) ->
+  herlka_logger:dump_to_raw(Logger, FilePath).
 
 -spec log(atom() | pid(), string(), integer(), string()) -> ok.
 log(Logger, Type, Severity, LogMsg) ->

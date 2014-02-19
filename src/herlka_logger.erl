@@ -19,7 +19,7 @@
 ]).
 
 
--export([send/2]).
+-export([send/2, clear_cache/1, dump_to_raw/2]).
 
 
 -record(state, {
@@ -32,7 +32,8 @@
   hmac_func,
   sock,
   type,
-  fields
+  fields,
+  dets_name
 }).
 
 
@@ -60,6 +61,9 @@ init([{_,_}|_] = Props) ->
 		udp -> gen_udp:open(0)
 	end,
 
+DetsName = proplists:get_value(cache_proto_buffer_to_dets, Props, null),
+{ok,DetsName} = dets:open_file(DetsName, []),
+
 {ok,  #state{
     hmac_key        = proplists:get_value(hmac_key, Props),
     hmac_signer     = proplists:get_value(hmac_signer, Props),
@@ -68,6 +72,7 @@ init([{_,_}|_] = Props) ->
     host            = proplists:get_value(host, Props, "127.0.0.1"),
     port            = proplists:get_value(port, Props, 0),
     sock            = Sock,
+    dets_name       = DetsName,
     type            = T,
     fields 			= [ #field{ name = herlka_utils:any_to_binary(N), value_string = herlka_utils:any_to_binary(V) } || 
         	{N,V} <- proplists:get_value(extra_fields, Props, [])]
@@ -84,18 +89,22 @@ handle_cast({log, #herlka_msg{} = Msg}, S) ->
   process_event(Msg, S),
   {noreply, S};
 
+handle_cast(clear_cache, #state{dets_name=D}=S) ->  
+  catch dets:delete_all_objects(D),
+  {noreply, S};
+
 handle_cast(_Event, State) ->
   {ok, State}.
 
 handle_info(_Info, State) ->
   {ok, State}.
 
-terminate(_Reason, S) when S#state.type == udp ->
-  catch gen_udp:close(S#state.sock),
+terminate(_Reason, #state{type=udp, sock=S}) ->
+  catch gen_udp:close(S),
   ok;
 
-terminate(_Reason, S) when S#state.type == tcp ->
-  catch gen_tcp:close(S#state.sock),
+terminate(_Reason, #state{type=tcp, sock=S}) ->
+  catch gen_tcp:close(S),
   ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -106,7 +115,21 @@ code_change(_OldVsn, State, _Extra) ->
 send(Server, #herlka_msg{} = H) when is_atom(Server); is_pid(Server) ->
 	gen_server:cast(Server, {log, H}).
 
+clear_cache(Server) when is_atom(Server); is_pid(Server) ->
+  gen_server:cast(Server, clear_cache).
 
+
+dump_to_raw(Server, FilePath) ->
+  case gen_server:call(Server, get_cache_name) of
+    null -> no_cache_set;
+    Name ->
+      {ok, Name} = dets:open_file(Name, [{access, readonly}]),
+
+      {ok,FH} = file:open(FilePath, [append,binary,raw]),
+      dets:traverse(fun({Data}) -> file:write(FH, Data), continue end),
+      file:close(FH),
+      ok
+  end.
 
 %% internal functions
 process_event(#herlka_msg{} = Log_Msg, #state{type=udp}=S) ->
@@ -115,7 +138,15 @@ process_event(#herlka_msg{} = Log_Msg, #state{type=udp}=S) ->
 process_event(#herlka_msg{} = Log_Msg, #state{type=tcp}=S) ->
   ok = gen_tcp:send(S#state.sock, compose_packet(Log_Msg, S)).
 
-compose_packet(#herlka_msg{ type = Type, timestamp = Ts} = Log_Msg, #state{fields=F}=S) ->
+compose_packet(#herlka_msg{} = Log_Msg, #state{dets_name=null}=S) ->
+  compose_packet_z(Log_Msg, S);
+
+compose_packet(#herlka_msg{} = Log_Msg, #state{dets_name=D}=S) ->
+  R = compose_packet_z(Log_Msg, S),
+  dets:insert(D,{R}), %% write to cache
+  R.
+
+compose_packet_z(#herlka_msg{ type = Type, timestamp = Ts} = Log_Msg, #state{fields=F}=S) ->
   
   Msg = herlka_message_pb:encode(#message {
     uuid = herlka_utils:uuid_v4(),
