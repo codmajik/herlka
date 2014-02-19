@@ -26,6 +26,7 @@ To start helka logger add the follow to your sys.config file
                     {transport, upd | tcp},
                     {host, inet:hostname() | inet:ipaddress()},
                     {port, inet:port()},
+                    {cache_proto_buffer_to_dets, atom()},
                     {hmac_func, md5 | sha},
                     {hmac_key, null | binary()},
                     {hmac_signer, null | binary()},
