@@ -7,8 +7,7 @@
                   kernel,
                   stdlib,
                   ssl,
-                  inets,
-                  lager
+                  inets
                  ]},
   {mod, { herlka_app, []}},
   {env, []}
