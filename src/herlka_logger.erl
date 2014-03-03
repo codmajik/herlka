@@ -61,8 +61,12 @@ init([{_,_}|_] = Props) ->
 		udp -> gen_udp:open(0)
 	end,
 
-DetsName = proplists:get_value(cache_proto_buffer_to_dets, Props, null),
-{ok,DetsName} = dets:open_file(DetsName, []),
+DetsName = case lists:keyfind(cache_proto_buffer_to_dets,1,Props) of
+  {cache_proto_buffer_to_dets,Value} ->
+    {ok,Value} = dets:open_file(Value, []),
+    DetsName;
+  false -> null
+end,
 
 {ok,  #state{
     hmac_key        = proplists:get_value(hmac_key, Props),
