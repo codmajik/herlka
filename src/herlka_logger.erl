@@ -64,7 +64,7 @@ init([{_,_}|_] = Props) ->
 DetsName = case lists:keyfind(cache_proto_buffer_to_dets,1,Props) of
   {cache_proto_buffer_to_dets,Value} ->
     {ok,Value} = dets:open_file(Value, []),
-    DetsName;
+    Value;
   false -> null
 end,
 
